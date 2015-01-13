@@ -1,0 +1,96 @@
+{% block djangohistory_title %}<h1><a href="/">root</a> / <a href="{% url "history-latest" %}">django-history</a>: {{header_name}}</h1>{% endblock %}
+
+{% block djangohistory_css_override %}
+<style>
+.old_change {
+    border-color: #fdd;
+}
+
+.old_change span {
+    background: #ffaaaa;
+}
+.new_change {
+    border-color: #b4e2b4;
+}
+.new_change span {
+    background: #ceffce;
+}
+.changeset_title {
+    margin: 0px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 13px;
+
+    color: #555;
+    text-shadow: 0 1px 0 #fff;
+    border-bottom: 1px solid #d8d8d8;
+    background-image: linear-gradient(#fafafa, #eaeaea);
+    background-repeat: repeat-x;
+}
+
+.changeset_body {
+    padding: 5px;
+}
+
+.change_action {
+    font-weight: bold;
+    color: #111;
+    text-transform: uppercase;
+}
+
+.change_time {
+    font-size: 13px;
+}
+
+.history_changeset {
+    border: 1px solid #ccc;
+    margin: 5px;
+}
+
+.field_change {
+    text-transform: capitalize;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% for k in history %}
+<div class="history_changeset">
+    {% with data=k.format %}
+    <div class="changeset_title">
+        <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
+        <span class="change_action">{{k.action}}</span>
+        <span class="change_action_by">by
+            <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.changes.user.to_string}}</a></span>
+        <span class="change_model">
+            -- {{k.changes.model.to_string}} (
+            <a href="{% url "history-by-ct" ct_id=k.model %}">{{k.changes.model.verbose_name}}</a>
+            <a href="{% url "history-by-id" ct_id=k.model id=k.object_id %}">#{{k.object_id}}</a>
+            )
+        </span>
+    </div>
+    <div class="changeset_body">
+        {% for change in data.fields %}
+        <div class="field_change">{{change.verbose_name|safe}}</div>
+            {% if change.is_fk or change.is_m2m %}
+                {% if change.is_m2m %}
+                    <div class="changed {{change.m2m_css_class}}"><span>{{change.changed_to_string}}</span></div>
+                {% else %}
+                    <div class="old_change"><span>{{change.old_to_string}}</span></div>
+                    <div class="new_change"><span>{{change.new_to_string}}</span></div>
+                {% endif %}
+            {% else %}
+                <div class="old_change"><span>{{change.old}}</span></div>
+                <div class="new_change"><span>{{change.new}}</span></div>
+                {% if change.diff %}
+                <div class="diff_change">
+                    {#change.diff|safe#}
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endwith %}
+    </div>
+</div>
+{% endfor %}
+
