@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models.signals import pre_delete, post_delete, post_init, post_save, m2m_changed, pre_save
 from django.db import models
 
@@ -41,7 +42,7 @@ def handle_model(sender, *args, **kwargs):
             default_values = {}
             for k,v in changes.iteritems():
                 default_values[k] = {}
-            changes = instance.get_changes(default_values)
+            changes = instance.get_changes(dirty_fields=default_values)
         History.objects.add(
                 action='save',
                 changes=changes,
@@ -50,7 +51,7 @@ def handle_model(sender, *args, **kwargs):
 def handle_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
     if hasattr(instance, 'get_changes'): # TODO: settings.TRACKED_APPS/MODELS?
-        changes = instance.get_changes(instance.get_field_values())
+        changes = instance.get_changes(dirty_fields=instance.get_field_values())
         for k,v in changes.iteritems():
             v['new'] = ''
         History.objects.add(
@@ -58,6 +59,7 @@ def handle_delete(sender, *args, **kwargs):
                 changes=changes,
                 model=instance)
 
-m2m_changed.connect(handle_m2m)
-post_save.connect(handle_model)
-pre_delete.connect(handle_delete) # pre; to get relational data
+if getattr(settings, 'DJANGO_HISTORY_TRACK', True):
+    m2m_changed.connect(handle_m2m)
+    post_save.connect(handle_model)
+    pre_delete.connect(handle_delete) # pre; to get relational data
