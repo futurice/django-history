@@ -1,3 +1,4 @@
+import django
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 import json
@@ -22,3 +23,10 @@ def get_setting(name):
         result = dh.get(k, None)
         dh = result
     return result
+
+def get_relation(rel):
+    if django.__version__>='1.8':
+        instance = rel.related.model
+    else:
+        instance = rel.related.parent_model
+    return instance

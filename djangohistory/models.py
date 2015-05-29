@@ -6,7 +6,7 @@ import json, copy
 
 from fields import JSONField
 from middleware import get_current_request
-from helpers import pretty_diff, get_setting
+from helpers import pretty_diff, get_setting, get_relation
 from pprint import pprint as pp
 
 class HistoryManager(models.Manager):
@@ -74,7 +74,7 @@ class HistoryManager(models.Manager):
             field = match_field(model, k)
             v['verbose_name'] = unicode(field.verbose_name)
             if isinstance(field, models.ForeignKey):
-                parent_model = field.related.parent_model
+                parent_model = get_relation(field)
                 if v['new']:
                     v['new_to_string'] = get_item(parent_model, v['new'])
                     if isinstance(v['new'], models.Model):

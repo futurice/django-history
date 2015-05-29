@@ -19,6 +19,7 @@ def main():
     parser.add_option("--DATABASE_USER", dest="DATABASE_USER", default="")
     parser.add_option("--DATABASE_PASSWORD", dest="DATABASE_PASSWORD", default="")
     parser.add_option("--SITE_ID", dest="SITE_ID", type="int", default=1)
+    parser.add_option("--cmd", dest="cmd", default="test")
     options, args = parser.parse_args()
     
     try:
@@ -67,7 +68,7 @@ def main():
     if django.get_version() >= '1.7':
         django.setup()
 
-    call_command("test", *args[1:])
+    call_command(options.cmd, *args[1:])
 
 if __name__ == "__main__":
     main()
