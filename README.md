@@ -5,9 +5,8 @@ django-history
 
 Features
 --------
-Tracks ForeignKeys and ManyToManyFields
-
-For Django 1.5+, Python 2.7+.
+* Tracks ForeignKeys and ManyToManyFields
+* For Django 1.5+, Python 2.7+.
 
 Add to models you want to track history for, eg.
 ```
@@ -49,3 +48,7 @@ Changes by specific Model instance: /history/by/?ct_id=&id=
 
 Diffs for changes can be enabled optionally:
 ```DJANGOHISTORY_DIFF_ENABLED = True```
+
+Disable history, to use only dirtyfield functionality:
+```DJANGO_HISTORY_TRACK = False```
+
