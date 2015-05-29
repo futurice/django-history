@@ -25,7 +25,8 @@ def get_setting(name):
     return result
 
 def get_relation(rel):
-    if django.__version__>='1.8':
+    django_version = '.'.join(map(str, django.VERSION[:2]))
+    if django_version >= '1.8':
         instance = rel.related.model
     else:
         instance = rel.related.parent_model
