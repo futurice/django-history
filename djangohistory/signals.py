@@ -3,6 +3,7 @@ from django.db.models.signals import pre_delete, post_delete, post_init, post_sa
 from django.db import models
 
 from models import History
+from helpers import get_relation
 
 ACTION_MAP = {
 'post_add': 'm2m.add',
@@ -23,7 +24,7 @@ def handle_m2m(sender, *args, **kwargs):
         relation_name = sender._meta.db_table.split('_')[-1]
         for pk in pk_set:
             relations = {k.name:k for k in instance.get_m2m_relations()}
-            related_instance = relations[relation_name].related.parent_model.objects.get(pk=pk)
+            related_instance = get_relation(relations[relation_name]).objects.get(pk=pk)
             field = relations[relation_name]
             changes = {field.name: {'changed': [pk], 'changed_to_string': unicode(related_instance)}}
             # TODO: add meta information about relation

@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
-from django.template import add_to_builtins
 
 from views import LatestView, ByView
 
