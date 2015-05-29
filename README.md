@@ -11,7 +11,7 @@ For Django 1.5+, Python 2.7+.
 
 Add to models you want to track history for, eg.
 ```
-from djangodirtyfield.mixins import DirtyFieldMixin
+from djangodirtyfield.mixin import DirtyFieldMixin
 class BaseModel(models.Model, DirtyFieldMixin):
  ...
 ```
