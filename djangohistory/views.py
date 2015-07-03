@@ -4,13 +4,15 @@ from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
-
+from django.http.response import Http404
 from models import History
 
 class LatestView(TemplateView):
     template_name = "djangohistory/latest.html"
-    
+
     def get(self, request):
+        if not request.user.is_staff:
+            raise Http404
         c = {}
         c['history'] = History.objects.all().order_by('-created')[:100]
         c['header_name'] = 'latest'
@@ -18,8 +20,10 @@ class LatestView(TemplateView):
 
 class ByView(TemplateView):
     template_name = "djangohistory/latest.html"
-    
+
     def get(self, request, ct_id=None, id=None, user_id=None):
+        if not request.user.is_staff:
+            raise Http404
         c = {}
         if ct_id:
             ct = ContentType.objects.get(pk=ct_id)
