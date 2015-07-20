@@ -63,6 +63,7 @@ def main():
             'EXCLUDE_CHANGES': {'{0}.user'.format(TEST_APP): {'fields': ['last_login']}},
             #'GET_CURRENT_REQUEST': ('djangohistory.middleware', 'get_current_request'),
         },
+        "DJANGO_HISTORY_VIEW_PERMISSION": ('djangohistory.views', 'get_view_permission'),
     })
 
     if django.get_version() >= '1.7':
