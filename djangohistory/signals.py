@@ -21,7 +21,7 @@ def handle_m2m(sender, *args, **kwargs):
     instance = kwargs['instance']
     if hasattr(instance, 'get_changes') and (action == 'post_add' or action == 'post_remove'):
         pk_set = list(kwargs['pk_set'])
-        relation_name = sender._meta.db_table.split('_')[-1]
+        relation_name = sender._meta.db_table.replace(sender._meta.app_label + '_' + instance.__class__.__name__.lower() + '_', '')
         for pk in pk_set:
             relations = {k.name:k for k in instance.get_m2m_relations()}
             related_instance = get_relation(relations[relation_name]).objects.get(pk=pk)
