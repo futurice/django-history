@@ -1,5 +1,6 @@
 django-history
 ==============
+* [Django-history](https://github.com/futurice/django-history) [![Build Status](https://travis-ci.org/futurice/django-history.svg?branch=master)](https://travis-ci.org/futurice/django-history)
 
 **django-history** helps you track all data changes for registered models.
 
