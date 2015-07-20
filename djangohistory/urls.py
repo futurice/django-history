@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 
-from views import LatestView, ByView
+from .views import LatestView, ByView
 
 urlpatterns = patterns('',
     url(r'^latest$', LatestView.as_view(), name='history-latest'),

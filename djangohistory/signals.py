@@ -2,8 +2,10 @@ from django.conf import settings
 from django.db.models.signals import pre_delete, post_delete, post_init, post_save, m2m_changed, pre_save
 from django.db import models
 
-from models import History
-from helpers import get_relation
+from djangohistory.models import History
+from djangohistory.helpers import get_relation
+
+import six
 
 ACTION_MAP = {
 'post_add': 'm2m.add',
@@ -26,7 +28,7 @@ def handle_m2m(sender, *args, **kwargs):
             relations = {k.name:k for k in instance.get_m2m_relations()}
             related_instance = get_relation(relations[relation_name]).objects.get(pk=pk)
             field = relations[relation_name]
-            changes = {field.name: {'changed': [pk], 'changed_to_string': unicode(related_instance)}}
+            changes = {field.name: {'changed': [pk], 'changed_to_string': six.text_type(related_instance)}}
             # TODO: add meta information about relation
             # - parent, child
             History.objects.add(
@@ -41,7 +43,7 @@ def handle_model(sender, *args, **kwargs):
         if changes.get('id') and changes['id']['old'] is None:
             changes = instance.get_field_values()
             default_values = {}
-            for k,v in changes.iteritems():
+            for k,v in six.iteritems(changes):
                 default_values[k] = {}
             changes = instance.get_changes(dirty_fields=default_values)
         History.objects.add(
@@ -53,7 +55,7 @@ def handle_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
     if hasattr(instance, 'get_changes'): # TODO: settings.TRACKED_APPS/MODELS?
         changes = instance.get_changes(dirty_fields=instance.get_field_values())
-        for k,v in changes.iteritems():
+        for k,v in six.iteritems(changes):
             v['new'] = ''
         History.objects.add(
                 action='delete',

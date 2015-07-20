@@ -4,10 +4,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 import json, copy
 
-from fields import JSONField
-from middleware import get_current_request
-from helpers import pretty_diff, get_setting, get_relation
+from djangohistory.fields import JSONField
+from djangohistory.middleware import get_current_request
+from djangohistory.helpers import pretty_diff, get_setting, get_relation
 from pprint import pprint as pp
+
+import six
 
 class HistoryManager(models.Manager):
     def int_or_instance_id(self, pk):
@@ -45,7 +47,7 @@ class HistoryManager(models.Manager):
         if excludes:
             excludes_for_model = excludes.get("{0}.{1}".format(model_ct.app_label, model_ct.model))
             if excludes_for_model:
-                for k,v in copy.deepcopy(changes).iteritems():
+                for k,v in six.iteritems(copy.deepcopy(changes)):
                     if k in excludes_for_model.get('fields', []):
                         del changes[k]
         if not changes:
@@ -58,9 +60,9 @@ class HistoryManager(models.Manager):
             if isinstance(pk, models.Model):
                 pk = copy.deepcopy(pk.pk)
             try:
-                value = unicode(model.objects.get(pk=pk))
-            except Exception, e:
-                if settings.DEBUG: print e
+                value = six.text_type(model.objects.get(pk=pk))
+            except Exception as e:
+                if settings.DEBUG: print(e)
             return value
 
         def match_field(model, changed_field):
@@ -70,9 +72,9 @@ class HistoryManager(models.Manager):
                 field = model._meta.get_field(k.replace('_id', ''))
             return field
 
-        for k,v in changes.iteritems():
+        for k,v in six.iteritems(changes):
             field = match_field(model, k)
-            v['verbose_name'] = unicode(field.verbose_name)
+            v['verbose_name'] = six.text_type(field.verbose_name)
             if isinstance(field, models.ForeignKey):
                 parent_model = get_relation(field)
                 if v['new']:
@@ -96,15 +98,15 @@ class HistoryManager(models.Manager):
                     'changed': list([k.pk for k in pk_set]),
                     'is_m2m': True,
                     'm2m_css_class': 'old_change',
-                    'changed_to_string': u", ".join([unicode(k) for k in pk_set]),
-                    'verbose_name': unicode(field.verbose_name),
+                    'changed_to_string': u", ".join([six.text_type(k) for k in pk_set]),
+                    'verbose_name': six.text_type(field.verbose_name),
                 }
                 changes[field.name] = row
         changeset = {
         'fields': changes,
         'model': {
-                'to_string': unicode(model),
-                'verbose_name': unicode(model._meta.verbose_name),
+                'to_string': six.text_type(model),
+                'verbose_name': six.text_type(model._meta.verbose_name),
                 'content_type': {
                     'id': model_ct.pk,
                     'app_label': model_ct.app_label,
@@ -112,7 +114,7 @@ class HistoryManager(models.Manager):
                 }
             },
         'user': {
-                'to_string': unicode(user),
+                'to_string': six.text_type(user),
             }
         }
 
@@ -141,7 +143,7 @@ class History(models.Model):
         fields = []
         if not self.changes:
             return []
-        for k,v in self.changes['fields'].iteritems():
+        for k,v in six.iteritems(self.changes['fields']):
             if k in skip_fields:
                 continue
             old = v['old'] if v.get('old') else ''

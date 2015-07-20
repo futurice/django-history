@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.middleware.csrf import get_token
 
-from helpers import get_setting
+from djangohistory.helpers import get_setting
 
 _thread_locals = None
 if get_setting('GET_CURRENT_REQUEST'):
