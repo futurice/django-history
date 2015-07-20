@@ -19,7 +19,7 @@ class TestCommand(Command):
                              'app_test_runner.py',
                              'test_project']))
 
-install_requires = ['django-dirtyfield==0.7', 'six']
+install_requires = ['django-dirtyfield>=0.7', 'six']
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
