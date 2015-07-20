@@ -53,4 +53,4 @@ Disable history, to use only dirtyfield functionality:
 ```DJANGO_HISTORY_TRACK = False```
 
 By default history is viewable by all. Provide your own function to secure views:
-```DJANGO_HISTORY_VIEW_PERMISSION = ('history.view','get_permission')```
+```DJANGO_HISTORY_VIEW_PERMISSION = ('djangohistory.views','get_permission')```
