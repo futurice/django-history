@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from django.http.response import Http404
 
-from models import History
+from djangohistory.models import History
 import importlib
 
 def get_view_permission(request):

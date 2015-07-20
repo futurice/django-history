@@ -12,11 +12,12 @@ from djangohistory.middleware import get_current_request
 from djangohistory.views import LatestView
 from djangohistory.helpers import get_setting
 
-from models import Publication, Article, Publisher
+from .models import Publication, Article, Publisher
 
 from pprint import pprint as pp
-import copy
 from collections import Counter
+import copy
+import six
 
 class BaseSuite(TransactionTestCase):
     pass
@@ -60,7 +61,7 @@ class NestedTest(BaseSuite):
         for k in History.objects.all().order_by('id'):
             self.assertTrue(ContentType.objects.get(pk=k.model))
             cnt[k.action] += 1
-            for i,j in k.changes['fields'].iteritems():
+            for i,j in six.iteritems(k.changes['fields']):
                 self.assertTrue(all(l in j for l in ['new', 'old'] if k.action in ['save']))
                 self.assertTrue(all(l in j for l in ['changed'] if k.action in ['post_add', 'post_delete']))
                 self.assertTrue((k.changes['fields']['id']['new'] is not None) if k.action in ['delete'] else True)

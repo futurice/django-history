@@ -2,9 +2,13 @@ import django
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+import six
 
 def to_json(data):
-    return json.dumps(data, encoding='utf-8', cls=DjangoJSONEncoder, ensure_ascii=False, separators=(',',':'))
+    kw = {}
+    if six.PY2:
+        kw['encoding'] = 'utf-8'
+    return json.dumps(data, cls=DjangoJSONEncoder, ensure_ascii=False, separators=(',',':'), **kw)
 
 def pretty_diff(a, b):
     import diff_match_patch
