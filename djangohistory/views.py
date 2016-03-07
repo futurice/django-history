@@ -8,6 +8,7 @@ from django.http.response import Http404
 
 from djangohistory.models import History
 import importlib
+import six
 
 def get_view_permission(request):
     return True
@@ -33,7 +34,7 @@ class ByView(ProjectBaseView):
     template_name = "djangohistory/latest.html"
 
     def get(self, request, ct_id=None, id=None, user_id=None):
-        if not self.permitted_to_view():
+        if not self.permitted_to_view(request):
             raise Http404
         c = {}
         if ct_id:
@@ -42,14 +43,14 @@ class ByView(ProjectBaseView):
         if id:
             instance = get_object_or_404(ct.model_class(), pk=id)
             history = History.objects.by_instance(instance).order_by('-created')[:100]
-            c['header_name'] = u'for {0} (#{1}) {2}'.format(unicode(ct), unicode(instance.pk), unicode(instance))
+            c['header_name'] = u'for {0} (#{1}) {2}'.format(six.text_type(ct), six.text_type(instance.pk), six.text_type(instance))
         elif user_id:
             instance = get_object_or_404(get_user_model(), pk=user_id)
             history = History.objects.by_user(instance).order_by('-created')[:100]
-            c['header_name'] = u'by {0}'.format(unicode(instance))
+            c['header_name'] = u'by {0}'.format(six.text_type(instance))
         else:
             history = History.objects.by_content_type(ct_id).order_by('-created')[:100]
-            c['header_name'] = u'for {0}'.format(unicode(ct))
+            c['header_name'] = u'for {0}'.format(six.text_type(ct))
 
         c['history'] = history
         return self.render_to_response(c)

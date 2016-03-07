@@ -31,6 +31,8 @@ def get_setting(name):
 def get_relation(rel):
     if django.VERSION[:2] >= (1, 9):
         instance = rel.remote_field.model
+    elif django.VERSION[:2] >= (1, 8):
+        instance = rel.related.model
     else:
         instance = rel.related.parent_model
     return instance
