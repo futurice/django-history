@@ -24,7 +24,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name = "django-history",
-    version = "0.3",
+    version = "0.4",
     description = "History for Django ORM data changes",
     url = "http://github.com/futurice/django-history",
     author = "Jussi Vaihia",

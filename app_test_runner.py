@@ -12,6 +12,30 @@ import django
 APP = 'djangohistory'
 TEST_APP = 'test_project'
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(os.path.dirname(__file__), "templates"),
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]
+        },
+    },
+]
+
 def main():
     parser = OptionParser()
     parser.add_option("--DATABASE_ENGINE", dest="DATABASE_ENGINE", default="sqlite3")
@@ -41,12 +65,12 @@ def main():
                 "PASSWORD": options.DATABASE_PASSWORD,
             }
         },
+        "DEBUG": True,
+        "ALLOWED_HOSTS": ['*'],
         "USE_TZ": True,
         "SITE_ID": options.SITE_ID,
         "ROOT_URLCONF": "{0}.urls".format(APP),
-        "TEMPLATE_DIRS": (
-            os.path.join(os.path.dirname(__file__), "templates"),
-        ),
+        "TEMPLATES": TEMPLATES,
         "INSTALLED_APPS": (
             "django.contrib.admin",
             "django.contrib.auth",

@@ -4,16 +4,13 @@ import six
 
 from djangohistory.helpers import to_json
 
-@six.add_metaclass(models.SubfieldBase)
 class JSONField(models.TextField):
 
     def formfield(self, **kwargs):
         return super(JSONField, self).formfield(form_class=JSONFormField, **kwargs)
 
-    def to_python(self, value):
-        if isinstance(value, six.string_types):
-            value = json.loads(value)
-        return value
+    def from_db_value(self, value, expression, connection, context):
+        return json.loads(value)
 
     def get_db_prep_save(self, value, connection, prepared=False):
         if value is None: return

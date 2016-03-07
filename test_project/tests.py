@@ -19,6 +19,9 @@ from collections import Counter
 import copy
 import six
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 class BaseSuite(TransactionTestCase):
     pass
 
