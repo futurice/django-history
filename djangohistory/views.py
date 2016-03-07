@@ -1,10 +1,10 @@
 from django.conf import settings
-from django.views.generic import TemplateView
-from django.shortcuts import redirect
-from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.http.response import Http404
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.views.generic import TemplateView
 
 from djangohistory.models import History
 import importlib

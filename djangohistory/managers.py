@@ -7,6 +7,13 @@ from djangohistory.middleware import get_current_request
 import copy
 import six
 
+def match_field(model, changed_field):
+    try:
+        field = model._meta.get_field(changed_field)
+    except:
+        field = model._meta.get_field(changed_field.replace('_id', ''))
+    return field
+
 class HistoryManager(models.Manager):
     def int_or_instance_id(self, pk):
         if not(isinstance(pk, int) or isinstance(pk, long) or isinstance(pk, basestring)):
@@ -60,17 +67,17 @@ class HistoryManager(models.Manager):
             except Exception as e:
                 if settings.DEBUG: print(e)
             return value
-
-        def match_field(model, changed_field):
+        
+        def verbose_name(field):
             try:
-                field = model._meta.get_field(k)
-            except:
-                field = model._meta.get_field(k.replace('_id', ''))
-            return field
+                vn = field.verbose_name
+            except AttributeError:
+                vn = field.name
+            return six.text_type(vn)
 
         for k,v in six.iteritems(changes):
             field = match_field(model, k)
-            v['verbose_name'] = six.text_type(field.verbose_name)
+            v['verbose_name'] = verbose_name(field)
             if isinstance(field, models.ForeignKey):
                 parent_model = get_relation(field)
                 if v['new']:
@@ -81,28 +88,22 @@ class HistoryManager(models.Manager):
                     v['old_to_string'] = get_item(parent_model, v['old'])
                     if isinstance(v['old'], models.Model):
                         v['old'] = v['old'].pk
-                v['is_fk'] = True
             if isinstance(field, models.ManyToManyField):
-                v['is_m2m'] = True
-                v['m2m_css_class'] = 'old_change'
-                if 'm2m.add' in action:
-                    v['m2m_css_class'] = 'new_change'
+                pass
         if 'delete' in action:# M2M copied on delete
             for field in model._meta.local_many_to_many:
                 pk_set = getattr(model, field.name).all()
                 row = {
                     'changed': list([k.pk for k in pk_set]),
-                    'is_m2m': True,
-                    'm2m_css_class': 'old_change',
                     'changed_to_string': u", ".join([six.text_type(k) for k in pk_set]),
-                    'verbose_name': six.text_type(field.verbose_name),
+                    'verbose_name': verbose_name(field),
                 }
                 changes[field.name] = row
         changeset = {
         'fields': changes,
         'model': {
                 'to_string': six.text_type(model),
-                'verbose_name': six.text_type(model._meta.verbose_name),
+                'verbose_name': verbose_name(model._meta),
                 'content_type': {
                     'id': model_ct.pk,
                     'app_label': model_ct.app_label,

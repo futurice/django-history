@@ -44,11 +44,11 @@ def main():
     parser.add_option("--DATABASE_PASSWORD", dest="DATABASE_PASSWORD", default="")
     parser.add_option("--SITE_ID", dest="SITE_ID", type="int", default=1)
     parser.add_option("--cmd", dest="cmd", default="test")
+    parser.add_option("--cmdargs", dest="cmdargs", default="")
     options, args = parser.parse_args()
 
-    # TODO: --cmd-args
-    if options.cmd == "migrate":
-        args.append('--run-syncdb')
+    if options.cmdargs:
+        args += options.cmdargs.split(',')
     
     try:
         app_path = args[0]

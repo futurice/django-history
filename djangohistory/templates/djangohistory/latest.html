@@ -28,6 +28,9 @@
     background-repeat: repeat-x;
 }
 
+.changeset_container {
+}
+
 .changeset_body {
     padding: 5px;
 }
@@ -47,6 +50,10 @@
     margin: 5px;
 }
 
+.propagation_pad {
+  margin-left: 25px;
+}
+
 .field_change {
     text-transform: capitalize;
     font-weight: bold;
@@ -55,42 +62,52 @@
 {% endblock %}
 
 {% for k in history %}
-<div class="history_changeset">
-    {% with data=k.format %}
-    <div class="changeset_title">
-        <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
-        <span class="change_action">{{k.action}}</span>
-        <span class="change_action_by">by
-            <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.changes.user.to_string}}</a></span>
-        <span class="change_model">
-            -- {{k.changes.model.to_string}} (
-            <a href="{% url "history-by-ct" ct_id=k.model %}">{{k.changes.model.verbose_name}}</a>
-            <a href="{% url "history-by-id" ct_id=k.model id=k.object_id %}">#{{k.object_id}}</a>
-            )
-        </span>
-    </div>
-    <div class="changeset_body">
-        {% for change in data.fields %}
-        <div class="field_change">{{change.verbose_name|safe}}</div>
-            {% if change.is_fk or change.is_m2m %}
-                {% if change.is_m2m %}
+  {% with data=k.format %}
+<div class="history_changeset {% if data.is_propagated %}propagation_pad{% endif %}">
+    <div class="changeset_container ">
+      <div class="changeset_title">
+          <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
+          <span class="change_action">{{k.action}}</span>
+          <span class="change_action_by">by
+              <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.changes.user.to_string}}</a></span>
+          <span class="change_model">
+              -- {{k.changes.model.to_string}} (
+              <a href="{% url "history-by-ct" ct_id=k.model %}">{{k.changes.model.verbose_name}}</a>
+              <a href="{% url "history-by-id" ct_id=k.model id=k.object_id %}">#{{k.object_id}}</a>
+              )
+          </span>
+      </div>
+      <div class="changeset_body">
+          {% for change in data.fields %}
+          <div class="field_change">{{change.verbose_name|safe}} {% if change.is_fk or change.is_m2m %}<a href="{{change.link}}">link</a>{% endif %}</div>
+              {% if change.is_fk or change.is_m2m %}
+                  {% if change.is_m2m %}
                     <div class="changed {{change.m2m_css_class}}"><span>{{change.changed_to_string}}</span></div>
-                {% else %}
-                    <div class="old_change"><span>{{change.old_to_string}}</span></div>
-                    <div class="new_change"><span>{{change.new_to_string}}</span></div>
-                {% endif %}
-            {% else %}
-                <div class="old_change"><span>{{change.old}}</span></div>
-                <div class="new_change"><span>{{change.new}}</span></div>
-                {% if change.diff %}
-                <div class="diff_change">
-                    {#change.diff|safe#}
-                </div>
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-    {% endwith %}
-    </div>
+                    {% if change.m2m_propagate %}
+                      <div class="old_change"><span>{{change.old}}</span></div>
+                      <div class="new_change"><span>{{change.new}}</span></div>
+                    {% endif %}
+                  {% endif %}
+                  {% if change.old_to_string %}
+                      <div class="old_change"><span>{{change.old_to_string}}</span></div>
+                      <div class="new_change"><span>{{change.new_to_string}}</span></div>
+                  {% else %}
+                      <div class="old_change"><span>{{change.old_to_string}}</span></div>
+                      <div class="new_change"><span>{{change.new_to_string}}</span></div>
+                  {% endif %}
+              {% else %}
+                  <div class="old_change"><span>{{change.old}}</span></div>
+                  <div class="new_change"><span>{{change.new}}</span></div>
+                  {% if change.diff %}
+                  <div class="diff_change">
+                      {#change.diff|safe#}
+                  </div>
+                  {% endif %}
+              {% endif %}
+          {% endfor %}
+      </div>
+    </div> {# /container #}
 </div>
+ {% endwith %}
 {% endfor %}
 
