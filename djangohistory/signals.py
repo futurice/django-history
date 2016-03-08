@@ -17,7 +17,7 @@ if settings.DEBUG:
 
 def get_field(relation):
     if isinstance(relation, models.ManyToManyField):
-        field = relation.remote_field
+        field = relation.remote_field if django.VERSION[:2] > (1, 8) else relation.related
     else:
         field = relation.field
     return field
@@ -73,7 +73,7 @@ def m2m_changed_handler(sender, *args, **kwargs):
                     model=instance,
                     commit=False,))
             # m2m to reflect on changes
-            field = field.remote_field if django.VERSION[:2] > (1, 8) else field.related
+            field = get_field(field)
             changes = {field.name: {'changed': [instance.pk],
                                     'changed_to_string': six.text_type(instance),
                                     'm2mpg': True,}}
