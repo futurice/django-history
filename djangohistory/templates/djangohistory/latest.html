@@ -123,7 +123,22 @@
 
 {% if not history %}
 <div>
-  Empty history
+  <i>No history found.</i>
 </div>
 {% endif %}
 
+{% if model_schema %}
+<div>
+  <h2>Schema for {{model_name}}</h2>
+{% for field in model_schema.fields %}
+<div>
+  {% if not field.hidden %}
+  {{field.name}} : {{field.cls}}
+  {% endif %}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div>
+</div>

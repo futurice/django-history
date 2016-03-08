@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 from django.core.urlresolvers import reverse
 
 from djangohistory.models import History
-from djangohistory.controllers import get_ct
+from djangohistory.helpers import models_listing, models_schemas
 
 import importlib
 import six
@@ -17,30 +17,10 @@ import six
 def get_view_permission(request):
     return True
 
-def models_listing():
-    c = []
-    for m in apps.get_models():
-        ct = get_ct(m)
-        url = reverse("history-by-ct", kwargs=dict(ct_id=ct.id))
-        c.append(dict(url=url, name=m._meta.object_name, model=m))
-    return c
-
-def models_schemas():
-    c = []
-    for model in models_listing():
-        d = {model['name']: {}}
-        f = []
-        for field in model['model']._meta.get_fields(include_hidden=True):
-            f.append(dict(cls=field.__class__.__name__,
-                          name=field.name,
-                          hidden=field.hidden),)
-        d[model['name']].setdefault('fields', f)
-        c.append(d)
-    return c
-
 def history_ctx():
     c = {}
     c['history_models'] = models_listing()
+    c['history_schemas'] = models_schemas()
     return c
 
 class ProjectBaseView(TemplateView):
@@ -69,6 +49,8 @@ class ByView(ProjectBaseView):
         c = history_ctx()
         if ct_id:
             ct = ContentType.objects.get(pk=ct_id)
+            c['model_schema'] = models_schemas().get(ct.model_class()._meta.object_name, {})
+            c['model_name'] = ct.model_class()._meta.object_name
         instance = u''
         if id:
             history = History.objects.filter(model=ct_id, object_id=id).order_by('-created')[:100]

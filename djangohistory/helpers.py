@@ -1,20 +1,18 @@
-import django
+from django.apps import apps
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.urlresolvers import reverse
+import django
+
 import json
 import six
-import diff_match_patch
 
 def to_json(data):
     kw = {}
     if six.PY2:
         kw['encoding'] = 'utf-8'
     return json.dumps(data, cls=DjangoJSONEncoder, ensure_ascii=False, separators=(',',':'), **kw)
-
-def pretty_diff(a, b):
-    d = diff_match_patch.diff_match_patch()
-    e = d.diff_main(a, b)
-    return d.diff_prettyHtml(e)
 
 def get_setting(name):
     """ Looks for settings under DJANGO_HISTORY_SETTINGS, supporting dot notation for nested lookups,
@@ -36,3 +34,37 @@ def get_relation(rel):
     else:
         instance = rel.related.parent_model
     return instance
+
+def models_listing():
+    c = []
+    for m in apps.get_models():
+        ct = get_ct(m)
+        url = reverse("history-by-ct", kwargs=dict(ct_id=ct.id))
+        c.append(dict(url=url, name=m._meta.object_name, model=m))
+    return c
+
+def models_schemas(models=None):
+    models = models or models_listing()
+    d = {}
+    for model in models:
+        d.setdefault(model['name'], {})
+        f = []
+        for field in model['model']._meta.get_fields(include_hidden=True):
+            f.append(dict(cls=field.__class__.__name__,
+                          name=field.name,
+                          hidden=field.hidden),)
+        d[model['name']].setdefault('fields', f)
+    return d
+
+def get_ct_by_id(pk):
+    return ContentType.objects.get(pk=pk)
+
+def get_ct(model):
+    return ContentType.objects.get_for_model(model)
+
+def match_field(model, changed_field):
+    try:
+        field = model._meta.get_field(changed_field)
+    except:
+        field = model._meta.get_field(changed_field.replace('_id', ''))
+    return field

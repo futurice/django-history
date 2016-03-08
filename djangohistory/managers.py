@@ -2,9 +2,9 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from djangohistory.helpers import pretty_diff, get_setting, get_relation
+from djangohistory.helpers import get_setting, get_relation, match_field
 from djangohistory.middleware import get_current_request
-from djangohistory.controllers import match_field, ACTIONS
+from djangohistory.controllers import ACTIONS
 
 import copy
 import six

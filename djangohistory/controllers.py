@@ -5,7 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from djangohistory.helpers import pretty_diff
+from djangohistory.diff import pretty_diff
+from djangohistory.helpers import get_ct, get_ct_by_id, match_field, models_schemas
 
 from collections import OrderedDict
 
@@ -22,19 +23,6 @@ ACTIONS = Choices(
     ('rem', 7, 'remove'),
 )
 action_id = lambda x: ACTIONS.for_display(x).value
-
-def get_ct_by_id(pk):
-    return ContentType.objects.get(pk=pk)
-
-def get_ct(model):
-    return ContentType.objects.get_for_model(model)
-
-def match_field(model, changed_field):
-    try:
-        field = model._meta.get_field(changed_field)
-    except:
-        field = model._meta.get_field(changed_field.replace('_id', ''))
-    return field
 
 class HistoryMixin(object):
     def link_instance(self):
@@ -100,6 +88,10 @@ class HistoryMixin(object):
         diff['user'] = self.changes['user']
         diff['user']['ct'] = get_ct(get_user_model()).pk
         diff['model'] = self.changes['model']
+        diff['model_name'] = self._meta.object_name
         diff['fields'] = fields
         diff['action'] = self.get_action_display()
         return diff
+
+    def modelschema(self):
+        return models_schemas().get(self._meta.object_name, {})
