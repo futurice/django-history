@@ -6,17 +6,35 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from djangohistory.helpers import pretty_diff
-from djangohistory.managers import match_field
 
 from collections import OrderedDict
 
 import six
+
+from extended_choices import Choices
+ACTIONS = Choices(
+    ('save', 1, 'save'),
+    ('delete', 2, 'delete'),
+    ('post_add', 3, 'm2m.add'),
+    ('post_remove', 4, 'm2m.remove'),
+    ('pre_clear', 5, 'm2m.clear'),
+    ('add', 6, 'add'),
+    ('rem', 7, 'remove'),
+)
+action_id = lambda x: ACTIONS.for_display(x).value
 
 def get_ct_by_id(pk):
     return ContentType.objects.get(pk=pk)
 
 def get_ct(model):
     return ContentType.objects.get_for_model(model)
+
+def match_field(model, changed_field):
+    try:
+        field = model._meta.get_field(changed_field)
+    except:
+        field = model._meta.get_field(changed_field.replace('_id', ''))
+    return field
 
 class HistoryMixin(object):
     def link_instance(self):
@@ -59,7 +77,7 @@ class HistoryMixin(object):
                 row['diff'] = pretty_diff(str(old), str(new))
 
             # CSS
-            if 'm2m.add' in self.action:
+            if self.action == ACTIONS.for_display('m2m.add').value:
                 row['m2m_css_class'] = 'new_change'
             else:
                 row['m2m_css_class'] = 'old_change'
@@ -70,7 +88,7 @@ class HistoryMixin(object):
             # M2M add/remove propagated to M2M itself
             if row.get('m2mpg'):
                 is_propagated = True
-                if self.action == 'add':
+                if self.action in [action_id(k) for k in ['add','save']]:
                     row['new'] = v['changed_to_string']
                     row['old'] = ''
                 else:
@@ -80,7 +98,7 @@ class HistoryMixin(object):
             fields.append(row)
         diff['is_propagated'] = is_propagated
         diff['user'] = self.changes['user']
-        diff['user']['ct'] = ContentType.objects.get_for_model(get_user_model()).pk
+        diff['user']['ct'] = get_ct(get_user_model()).pk
         diff['model'] = self.changes['model']
         diff['fields'] = fields
         return diff

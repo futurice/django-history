@@ -7,7 +7,8 @@ from django.utils.timezone import now
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 
-from djangohistory.models import History
+from djangohistory.models import History, ACTIONS
+from djangohistory.controllers import action_id
 from djangohistory.middleware import get_current_request
 from djangohistory.views import LatestView
 from djangohistory.helpers import get_setting
@@ -45,9 +46,9 @@ class NestedTest(BaseSuite):
         history = History.objects.by_instance(a).order_by('id')
         a_ct = ContentType.objects.get_for_model(a)
         self.assertTrue(history.count(), 2)
-        self.assertEqual(history[0].action, 'save')
+        self.assertEqual(history[0].action, ACTIONS.for_constant('save').value)
         self.assertEqual(history[0].model, a_ct.pk)
-        self.assertEqual(history[1].action, 'm2m.add')
+        self.assertEqual(history[1].action, ACTIONS.for_display('m2m.add').value)
         self.assertEqual(history[1].model, a_ct.pk)
         self.assertEqual(history[1].changes['fields']['publications']['changed'], [p.pk])
 
@@ -69,7 +70,7 @@ class NestedTest(BaseSuite):
                 self.assertTrue(all(l in j for l in ['changed'] if k.action in ['post_add', 'post_delete']))
                 self.assertTrue((k.changes['fields']['id']['new'] is not None) if k.action in ['delete'] else True)
                 self.assertTrue((k.changes['fields']['id']['old'] is not None) if k.action in ['delete'] else True)
-        self.assertTrue(all(k in cnt.keys() for k in ['save','delete','m2m.add']))
+        self.assertTrue(all(action_id(k) in cnt.keys() for k in ['save','delete','m2m.add']))
 
     def test_with_user(self):
         user = self.user_model.objects.create(username='BobbyTables')

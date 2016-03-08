@@ -1,14 +1,14 @@
 from django.conf import settings
 from django.db import models
 
-import json, copy
+import json, copy, six
 
-from djangohistory.controllers import HistoryMixin
+from djangohistory.controllers import HistoryMixin, ACTIONS
 from djangohistory.fields import JSONField
 from djangohistory.managers import HistoryManager
 
 class History(models.Model, HistoryMixin):
-    action = models.CharField(max_length=255)
+    action = models.IntegerField(choices=ACTIONS)
     changes = JSONField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 

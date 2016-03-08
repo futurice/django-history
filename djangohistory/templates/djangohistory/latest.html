@@ -55,6 +55,8 @@
 }
 
 .field_change {
+}
+.field_title {
     text-transform: capitalize;
     font-weight: bold;
 }
@@ -62,7 +64,7 @@
 {% endblock %}
 
 {% for k in history %}
-  {% with data=k.format %}
+{% with data=k.format %}
 <div class="history_changeset {% if data.is_propagated %}propagation_pad{% endif %}">
     <div class="changeset_container ">
       <div class="changeset_title">
@@ -79,7 +81,7 @@
       </div>
       <div class="changeset_body">
           {% for change in data.fields %}
-          <div class="field_change">{{change.verbose_name|safe}} {% if change.is_fk or change.is_m2m %}<a href="{{change.link}}">link</a>{% endif %}</div>
+          <div class="field_change"><span class="field_title">{{change.verbose_name|safe}}</span> {% if change.is_fk or change.is_m2m %}<a href="{{change.link}}">link</a>{% endif %}</div>
               {% if change.is_fk or change.is_m2m %}
                   {% if change.is_m2m %}
                     <div class="changed {{change.m2m_css_class}}"><span>{{change.changed_to_string}}</span></div>
@@ -108,6 +110,6 @@
       </div>
     </div> {# /container #}
 </div>
- {% endwith %}
+{% endwith %}
 {% endfor %}
 

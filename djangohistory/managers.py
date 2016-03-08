@@ -4,15 +4,10 @@ from django.db import models
 
 from djangohistory.helpers import pretty_diff, get_setting, get_relation
 from djangohistory.middleware import get_current_request
+from djangohistory.controllers import match_field, ACTIONS
+
 import copy
 import six
-
-def match_field(model, changed_field):
-    try:
-        field = model._meta.get_field(changed_field)
-    except:
-        field = model._meta.get_field(changed_field.replace('_id', ''))
-    return field
 
 class HistoryManager(models.Manager):
     def int_or_instance_id(self, pk):
@@ -33,7 +28,7 @@ class HistoryManager(models.Manager):
     def by_user(self, instance):
         return self.filter(user=instance.pk)
 
-    def add(self, action, changes, model, user=None, object_id=None):
+    def add(self, action, changes, model, user=None, object_id=None, commit=True):
         if not getattr(settings, 'DJANGO_HISTORY_TRACK', True):
             return
         request = get_current_request()
@@ -116,9 +111,11 @@ class HistoryManager(models.Manager):
         }
 
         history = self.model(
-            action=action,
+            action=ACTIONS.for_constant(action).value,
             changes=changeset,
             model=model_id,
             user=user_id,
             object_id=object_id,)
-        history.save(force_insert=True)
+        if commit:
+            history.save(force_insert=True)
+        return history

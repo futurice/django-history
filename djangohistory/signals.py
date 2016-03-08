@@ -11,12 +11,6 @@ from djangodirtyfield.mixin import DirtyFieldMixin
 import six
 import logging
 
-ACTION_MAP = {
-'post_add': 'm2m.add',
-'post_remove': 'm2m.remove',
-'pre_clear': 'm2m.clear',
-}
-
 logger = logging.getLogger('djangohistory')
 if settings.DEBUG:
     logging.basicConfig(level=logging.DEBUG)
@@ -55,7 +49,8 @@ def m2m_changed_handler(sender, *args, **kwargs):
     action = kwargs['action']
     instance = kwargs['instance']
     logger.debug("handle_m2m: %s (%s) {%s}"%(sender, args, kwargs))
-    # TODO: bulk updates when >1
+
+    bulk = []
     if is_df(instance) and (action in ['post_add', 'post_remove']):
         pk_set = list(kwargs.get('pk_set') or [])
         relation_name = sender._meta.db_table.replace(sender._meta.app_label + '_' + instance.__class__.__name__.lower() + '_', '')
@@ -65,23 +60,22 @@ def m2m_changed_handler(sender, *args, **kwargs):
             related_instance = get_relation(relations[relation_name]).objects.get(pk=pk)
             changes = {field.name: {'changed': [pk],
                                     'changed_to_string': six.text_type(related_instance)}}
-            # TODO: add meta information about relation
-            # - parent, child
-
             # reflect change
-            History.objects.add(
-                    action=ACTION_MAP[action],
+            bulk.append(History.objects.add(
+                    action=action,
                     changes=changes,
-                    model=instance,)
+                    model=instance,
+                    commit=False,))
             # m2m to reflect on changes
             field = field.remote_field if django.VERSION[:2] > (1, 8) else field.related
             changes = {field.name: {'changed': [instance.pk],
-                                            'changed_to_string': six.text_type(instance),
-                                            'm2mpg': True,}}
-            History.objects.add(
-                    action='add' if 'post_add' else 'remove',
+                                    'changed_to_string': six.text_type(instance),
+                                    'm2mpg': True,}}
+            bulk.append(History.objects.add(
+                    action='add' if action in ['post_add'] else 'rem',
                     changes=changes,
-                    model=related_instance,)
+                    model=related_instance,
+                    commit=False,))
     if is_df(instance) and (action in ['pre_clear']):
         # "For the pre_clear and post_clear actions, this is None."
         # TODO: should defer this until post_clear is done to be sure it happened
@@ -92,11 +86,15 @@ def m2m_changed_handler(sender, *args, **kwargs):
             field = get_model_relation_by_instance(kwargs['model'], instance)
             changes = {field.name: {'changed': [instance.pk],
                                     'changed_to_string': six.text_type(instance)}}
-            for k in instances: 
-                History.objects.add(
-                        action=ACTION_MAP[action],
+            for k in instances:
+                bulk.append(History.objects.add(
+                        action=action,
                         changes=changes,
-                        model=k,)
+                        model=k,
+                        commit=False,))
+
+    if bulk:
+        History.objects.bulk_create(bulk)
 
 def post_save_handler(sender, *args, **kwargs):
     instance = kwargs['instance']
@@ -123,10 +121,9 @@ def pre_delete_handler(sender, *args, **kwargs):
                 action='delete',
                 changes=changes,
                 model=instance)
-
         # TODO:m2m to reflect on changes
 
 if getattr(settings, 'DJANGO_HISTORY_TRACK', True):
     m2m_changed.connect(m2m_changed_handler)
     post_save.connect(post_save_handler)
-    pre_delete.connect(pre_delete_handler) # pre; to get relational data
+    pre_delete.connect(pre_delete_handler)
