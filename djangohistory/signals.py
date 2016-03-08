@@ -16,15 +16,8 @@ if settings.DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
 def m2m_relations(instance):
-    fields = []
-    if django.VERSION[:2]>=(1, 9):
-        fields = [f for f in instance._meta.get_fields()
-                if f.is_relation and f.many_to_many]
-    else:
-        for field, model in instance._meta.get_m2m_with_model():
-            if isinstance(field, models.ManyToManyField):
-                fields.append(field)
-    return fields
+    return [f for f in instance._meta.get_fields() \
+            if f.is_relation and f.many_to_many]
 
 def get_model_relation_by_instance(model, relation):
     return [k for k in m2m_relations(model) if \
@@ -133,7 +126,7 @@ def pre_delete_handler(sender, *args, **kwargs):
                 commit=False,))
         # m2m to propagation
         for relation in m2m_relations(instance):
-            field = relation.remote_field if django.VERSION[:2] > (1, 8) else relation.related
+            field = relation.field
             changes = {field.name: {'changed': [instance.pk],
                                     'changed_to_string': six.text_type(instance),
                                     'm2mpg': True,}}

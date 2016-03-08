@@ -15,7 +15,6 @@ from djangohistory.helpers import get_setting
 
 from .models import Publication, Article, Publisher
 
-from pprint import pprint as pp
 from collections import Counter
 import copy
 import six
