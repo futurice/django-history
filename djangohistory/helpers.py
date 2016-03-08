@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 import six
+import diff_match_patch
 
 def to_json(data):
     kw = {}
@@ -11,7 +12,6 @@ def to_json(data):
     return json.dumps(data, cls=DjangoJSONEncoder, ensure_ascii=False, separators=(',',':'), **kw)
 
 def pretty_diff(a, b):
-    import diff_match_patch
     d = diff_match_patch.diff_match_patch()
     e = d.diff_main(a, b)
     return d.diff_prettyHtml(e)

@@ -89,7 +89,6 @@ def main():
         "AUTH_USER_MODEL": '{0}.User'.format(TEST_APP),
         "DJANGO_HISTORY_SETTINGS": {
             'EXCLUDE_CHANGES': {'{0}.user'.format(TEST_APP): {'fields': ['last_login']}},
-            #'GET_CURRENT_REQUEST': ('djangohistory.middleware', 'get_current_request'),
         },
         "DJANGO_HISTORY_VIEW_PERMISSION": ('djangohistory.views', 'get_view_permission'),
     })

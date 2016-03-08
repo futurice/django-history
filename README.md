@@ -25,7 +25,7 @@ INSTALLED_APPS += (
 To enable storing request.user information:
 ```
 MIDDLEWARE_CLASSES += (
-    'djangohistory.middleware.ThreadLocals',)
+    'djangocurrentrequest.middleware.RequestMiddleware',)
 ```
 If you already a similar setup, configure:
 ```

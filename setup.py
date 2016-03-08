@@ -24,7 +24,9 @@ install_requires = [
     'six',
     'Django>=1.8',
     'diff-match-patch>=20121119',
-    'django-extended-choices>=1.0.6',]
+    'django-extended-choices>=1.0.6',
+    'django-current-request>=0.1',
+    ]
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
