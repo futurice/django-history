@@ -71,7 +71,7 @@
           <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
           <span class="change_action">{{data.action}}</span>
           <span class="change_action_by">by
-              <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.changes.user.to_string}}</a></span>
+              <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.user.to_string}}</a></span>
           <span class="change_model">
               -- {{k.changes.model.to_string}} (
               <a href="{% url "history-by-ct" ct_id=k.model %}">{{k.changes.model.verbose_name}}</a>

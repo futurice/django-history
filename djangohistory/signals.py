@@ -15,6 +15,13 @@ logger = logging.getLogger('djangohistory')
 if settings.DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
+def get_field(relation):
+    if isinstance(relation, models.ManyToManyField):
+        field = relation.remote_field
+    else:
+        field = relation.field
+    return field
+
 def m2m_relations(instance):
     return [f for f in instance._meta.get_fields() \
             if f.is_relation and f.many_to_many]
@@ -126,7 +133,7 @@ def pre_delete_handler(sender, *args, **kwargs):
                 commit=False,))
         # m2m to propagation
         for relation in m2m_relations(instance):
-            field = relation.field
+            field = get_field(relation)
             changes = {field.name: {'changed': [instance.pk],
                                     'changed_to_string': six.text_type(instance),
                                     'm2mpg': True,}}

@@ -106,7 +106,7 @@ class HistoryManager(models.Manager):
                 }
             },
         'user': {
-                'to_string': six.text_type(user),
+                'to_string': six.text_type(user) if user else "",
             }
         }
 
