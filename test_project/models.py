@@ -35,6 +35,7 @@ class Publication(BaseModel):
 class Article(BaseModel):
     headline = models.CharField(max_length=255)
     publications = models.ManyToManyField(Publication)
+    modified = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.headline

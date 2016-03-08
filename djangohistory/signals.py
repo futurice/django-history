@@ -31,10 +31,16 @@ def get_model_relation_by_instance(model, relation):
             isinstance(relation, get_relation(k))].pop()
 
 def get_m2m_reverse_instances(instance, relation):
-    if relation.related_query_name:
-        return getattr(instance, relation.related_query_name).all()
+    if relation.related_query_name and relation.related_query_name():
+        return getattr(instance, relation.related_query_name()).all()
     else:
+        return get_m2m_instances(instance, relation)
+
+def get_m2m_instances(instance, relation):
+    if hasattr(instance, '%s_set'%relation.name):
         return getattr(instance, '%s_set'%relation.name).all()
+    return getattr(instance, relation.name).all()
+
 
 def is_df(instance):
     return isinstance(instance, DirtyFieldMixin)
@@ -48,7 +54,7 @@ def m2m_changed_handler(sender, *args, **kwargs):
     """
     action = kwargs['action']
     instance = kwargs['instance']
-    logger.debug("handle_m2m: %s (%s) {%s}"%(sender, args, kwargs))
+    logger.debug("m2m_changed: %s (%s) {%s}"%(sender, args, kwargs))
 
     bulk = []
     if is_df(instance) and (action in ['post_add', 'post_remove']):
@@ -97,6 +103,7 @@ def m2m_changed_handler(sender, *args, **kwargs):
         History.objects.bulk_create(bulk)
 
 def post_save_handler(sender, *args, **kwargs):
+    logger.debug("post_save: %s (%s) {%s}"%(sender, args, kwargs))
     instance = kwargs['instance']
     if is_df(instance):
         changes = instance.get_changes()
@@ -112,16 +119,33 @@ def post_save_handler(sender, *args, **kwargs):
                 model=instance)
 
 def pre_delete_handler(sender, *args, **kwargs):
+    logger.debug("pre_delete: %s (%s) {%s}"%(sender, args, kwargs))
     instance = kwargs['instance']
-    if is_df(instance): # TODO: settings.TRACKED_APPS/MODELS?
+    bulk = []
+    if is_df(instance):
         changes = instance.get_changes(dirty_fields=instance.dirtyfield.get_field_values())
         for k,v in six.iteritems(changes):
             v['new'] = ''
-        History.objects.add(
+        bulk.append(History.objects.add(
                 action='delete',
                 changes=changes,
-                model=instance)
-        # TODO:m2m to reflect on changes
+                model=instance,
+                commit=False,))
+        # m2m to propagation
+        for relation in m2m_relations(instance):
+            field = relation.remote_field if django.VERSION[:2] > (1, 8) else relation.related
+            changes = {field.name: {'changed': [instance.pk],
+                                    'changed_to_string': six.text_type(instance),
+                                    'm2mpg': True,}}
+            instances = get_m2m_instances(instance, relation)
+            for k in instances:
+                bulk.append(History.objects.add(
+                        action='rem',
+                        changes=changes,
+                        model=k,
+                        commit=False,))
+    if bulk:
+        History.objects.bulk_create(bulk)
 
 if getattr(settings, 'DJANGO_HISTORY_TRACK', True):
     m2m_changed.connect(m2m_changed_handler)

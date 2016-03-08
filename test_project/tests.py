@@ -54,8 +54,9 @@ class NestedTest(BaseSuite):
 
         history_count = lambda: History.objects.all().count()
         history_count_before = history_count()
+        num_history_entries = len([a, a.publications.all()])
         p.delete()
-        self.assertEqual(history_count_before, history_count() - 1)
+        self.assertEqual(history_count_before, history_count() - num_history_entries)
 
         self.assertEqual(
                 History.objects.filter(user__isnull=True).count(),
