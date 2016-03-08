@@ -69,7 +69,7 @@
     <div class="changeset_container ">
       <div class="changeset_title">
           <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
-          <span class="change_action">{{k.action}}</span>
+          <span class="change_action">{{data.action}}</span>
           <span class="change_action_by">by
               <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.changes.user.to_string}}</a></span>
           <span class="change_model">
@@ -81,7 +81,9 @@
       </div>
       <div class="changeset_body">
           {% for change in data.fields %}
-          <div class="field_change"><span class="field_title">{{change.verbose_name|safe}}</span> {% if change.is_fk or change.is_m2m %}<a href="{{change.link}}">link</a>{% endif %}</div>
+          <div class="field_change"><span class="field_title">{{change.verbose_name|safe}}</span>
+            {% if change.is_fk or change.is_m2m or change.m2mpg %}<a href="{{change.link}}">link</a>{% endif %}
+          </div>
               {% if change.is_fk or change.is_m2m %}
                   {% if change.is_m2m %}
                     <div class="changed {{change.m2m_css_class}}"><span>{{change.changed_to_string}}</span></div>

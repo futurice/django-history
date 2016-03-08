@@ -101,4 +101,5 @@ class HistoryMixin(object):
         diff['user']['ct'] = get_ct(get_user_model()).pk
         diff['model'] = self.changes['model']
         diff['fields'] = fields
+        diff['action'] = self.get_action_display()
         return diff
