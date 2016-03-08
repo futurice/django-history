@@ -25,6 +25,19 @@ def models_listing():
         c.append(dict(url=url, name=m._meta.object_name, model=m))
     return c
 
+def models_schemas():
+    c = []
+    for model in models_listing():
+        d = {model['name']: {}}
+        f = []
+        for field in model['model']._meta.get_fields(include_hidden=True):
+            f.append(dict(cls=field.__class__.__name__,
+                          name=field.name,
+                          hidden=field.hidden),)
+        d[model['name']].setdefault('fields', f)
+        c.append(d)
+    return c
+
 def history_ctx():
     c = {}
     c['history_models'] = models_listing()
