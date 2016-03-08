@@ -88,6 +88,8 @@ class HistoryManager(models.Manager):
         if 'delete' in action:# M2M copied on delete
             for field in model._meta.local_many_to_many:
                 pk_set = getattr(model, field.name).all()
+                if not pk_set:
+                    continue
                 row = {
                     'changed': list([k.pk for k in pk_set]),
                     'changed_to_string': u", ".join([six.text_type(k) for k in pk_set]),

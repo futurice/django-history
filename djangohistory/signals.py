@@ -41,7 +41,6 @@ def get_m2m_instances(instance, relation):
         return getattr(instance, '%s_set'%relation.name).all()
     return getattr(instance, relation.name).all()
 
-
 def is_df(instance):
     return isinstance(instance, DirtyFieldMixin)
 

@@ -63,12 +63,18 @@
 </style>
 {% endblock %}
 
+{% block history_models_block %}
+{% for k in history_models %}
+  <a href="{{k.url}}">{{k.name}}</a>
+{% endfor %}
+{% endblock %}
+
 {% for k in history %}
 {% with data=k.format %}
 <div class="history_changeset {% if data.is_propagated %}propagation_pad{% endif %}">
     <div class="changeset_container ">
       <div class="changeset_title">
-          <span class="change_time">{{k.created|date:"d-m-Y H:i"}}</span>
+          <span class="change_time">{{k.created|date:"d-m-Y H:i"}} ({{k.id}})</span>
           <span class="change_action">{{data.action}}</span>
           <span class="change_action_by">by
               <a href="{% if k.user %}{% url "history-by-user" user_id=k.user %}{% else %}#{% endif %}">{{k.user.to_string}}</a></span>
@@ -114,4 +120,10 @@
 </div>
 {% endwith %}
 {% endfor %}
+
+{% if not history %}
+<div>
+  Empty history
+</div>
+{% endif %}
 
