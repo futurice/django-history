@@ -93,7 +93,7 @@ def main():
         "DJANGO_HISTORY_VIEW_PERMISSION": ('djangohistory.views', 'get_view_permission'),
     })
 
-    if django.get_version() >= '1.7':
+    if django.VERSION >= (1, 7, 0):
         django.setup()
 
     call_command(options.cmd, *args[1:])
