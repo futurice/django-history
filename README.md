@@ -7,7 +7,6 @@ django-history
 Features
 --------
 * Tracks ForeignKeys and ManyToManyFields
-* For Django 1.5+, Python 2.7+.
 
 Add to models you want to track history for, eg.
 ```
@@ -25,7 +24,7 @@ INSTALLED_APPS += (
 To enable storing request.user information:
 ```
 MIDDLEWARE_CLASSES += (
-    'djangohistory.middleware.ThreadLocals',)
+    'djangocurrentrequest.middleware.RequestMiddleware',)
 ```
 If you already a similar setup, configure:
 ```
@@ -35,23 +34,16 @@ DJANGO_HISTORY_SETTINGS['GET_CURRENT_REQUEST'] = ('my.middleware', 'current_requ
 View changesets by enabling routing:
 
 ```
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^history/', include('djangohistory.urls')),
-    )
+]
 ```
 
-All changes: /history/latest
-
-Changes by Content Type: /history/by/?ct_id=
-
-Changes by specific Model instance: /history/by/?ct_id=&id=
-
-
-Diffs for changes can be enabled optionally:
+Diffs for changes:
 ```DJANGOHISTORY_DIFF_ENABLED = True```
 
-Disable history, to use only dirtyfield functionality:
+Toggle history storage on/off:
 ```DJANGO_HISTORY_TRACK = False```
 
-By default history is viewable by all. Provide your own function to secure views:
+By default all history public. Provide your own function to secure views:
 ```DJANGO_HISTORY_VIEW_PERMISSION = ('djangohistory.views','get_permission')```

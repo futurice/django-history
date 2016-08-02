@@ -19,12 +19,19 @@ class TestCommand(Command):
                              'app_test_runner.py',
                              'test_project']))
 
-install_requires = ['django-dirtyfield>=0.7', 'six']
+install_requires = [
+    'django-dirtyfield>=0.9',
+    'six',
+    'Django>=1.8',
+    'diff-match-patch>=20121119',
+    'django-extended-choices>=1.0.6',
+    'django-current-request>=0.1',
+    ]
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name = "django-history",
-    version = "0.3",
+    version = "0.5",
     description = "History for Django ORM data changes",
     url = "http://github.com/futurice/django-history",
     author = "Jussi Vaihia",
